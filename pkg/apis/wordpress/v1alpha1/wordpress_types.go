@@ -84,6 +84,10 @@ type WordpressSpec struct {
 	// If no routes are specified, ingress syncing is disabled and WP_HOME de defaults to NAME.NAMESPACE.svc.
 	// +optional
 	Routes []RouteSpec `json:"routes,omitempty"`
+	// SkipIngress allows disabling the ingress creation even if routes are defined.
+	// This is useful when using Gateway API or other routing mechanisms.
+	// +optional
+	SkipIngress bool `json:"skipIngress,omitempty"`
 	// WordPress runtime image to use. Defaults to docker.io/bitpoke/wordpress-runtime:<latest stable runtime tag>
 	// +optional
 	Image string `json:"image,omitempty"`

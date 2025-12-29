@@ -1,0 +1,64 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Extract tag version
+      if: startsWith(github.ref, 'refs/tags/')
+      id: extract_tag
+      run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v5
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.17' # Matches GO_SUPPORTED_VERSIONS in Makefile
+
+    - name: Build and Push with Make
+      env:
+        # Use the ECR registry URL from the login step
+        DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ env.TAG || 'latest' }}
+      run: |
+        # 1. Compile the binary for Linux (required by the Dockerfile)
+        make build PLATFORMS=linux_amd64
+
+        # 2. Build the image using the project's internal Makefile logic
+        # This correctly populates the rootfs and builds the distroless image
+        make -C images/wordpress-operator img.build
+
+        # 3. Tag and Push to ECR if this is a version tag
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          # The Makefile builds the image as {registry}/wordpress-operator-amd64
+          # We retag it to the standard repository name and version tag
+          docker tag ${{ steps.login-ecr.outputs.registry }}/wordpress-operator-amd64:latest \
+                     ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
+
+          docker push ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
+        fi
