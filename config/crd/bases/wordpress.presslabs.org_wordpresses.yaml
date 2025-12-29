@@ -2292,6 +2292,9 @@ spec:
                   description: Number of desired web pods. This is a pointer to distinguish between explicit zero and not specified. Defaults to 1.
                   format: int32
                   type: integer
+                skipIngress:
+                  description: SkipIngress allows disabling the ingress creation even if routes are defined.
+                  type: boolean
                 resources:
                   description: 'If specified, the resources required by wordpress container. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   properties:
