@@ -45,17 +45,17 @@ jobs:
         LOCAL_REGISTRY: "local-build"
         IMAGE_TAG: ${{ env.TAG || 'latest' }}
       run: |
-      if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-        make kubebuilder.manifests
-        make .kubebuilder.update.chart
-        make build PLATFORMS=linux_amd64
-        make -C images/wordpress-operator img.build BUILD_REGISTRY=${{ env.LOCAL_REGISTRY }}
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          make kubebuilder.manifests
+          make .kubebuilder.update.chart
+          make build PLATFORMS=linux_amd64
+          make -C images/wordpress-operator img.build BUILD_REGISTRY=${{ env.LOCAL_REGISTRY }}
 
 
-          # The image was built as local-build/wordpress-operator-amd64:latest
-          # Retag it to your actual ECR registry and specific version tag
-          docker tag ${{ env.LOCAL_REGISTRY }}/wordpress-operator-amd64:latest \
-                     ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
+            # The image was built as local-build/wordpress-operator-amd64:latest
+            # Retag it to your actual ECR registry and specific version tag
+            docker tag ${{ env.LOCAL_REGISTRY }}/wordpress-operator-amd64:latest \
+                       ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
 
-          docker push ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
-        fi
+            docker push ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
+          fi
