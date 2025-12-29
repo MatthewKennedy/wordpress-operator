@@ -57,8 +57,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         CHART_PACKAGE=$(ls _output/charts/*.tgz | head -n 1)
-        helm push $CHART_PACKAGE oci://${{ steps.login-ecr.outputs.registry }}/wordpress-operator-chart
-
+        helm push $CHART_PACKAGE oci://${{ steps.login-ecr.outputs.registry }}
 
     - name: Build and Push with Make
       env:
