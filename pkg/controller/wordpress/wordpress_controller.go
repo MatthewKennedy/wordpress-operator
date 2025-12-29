@@ -134,10 +134,6 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 		// sync.NewDBUpgradeJobSyncer(wp, r.Client),
 	}
 
-	if !wp.Spec.SkipIngress && len(wp.Spec.Routes) > 0 {
-	    syncers = append(syncers, sync.NewIngressSyncer(wp, r.Client))
-	}
-
 	if wp.Spec.CodeVolumeSpec != nil && wp.Spec.CodeVolumeSpec.PersistentVolumeClaim != nil {
 		syncers = append(syncers, sync.NewCodePVCSyncer(wp, r.Client))
 	}
