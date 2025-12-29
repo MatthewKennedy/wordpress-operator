@@ -59,15 +59,15 @@ jobs:
         CHART_PACKAGE=$(ls _output/charts/*.tgz | head -n 1)
         helm push $CHART_PACKAGE oci://${{ steps.login-ecr.outputs.registry }}
 
-    - name: Build and Push with Make
+    - name: Build and Push Docker Image
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         LOCAL_REGISTRY: "local-build"
-        IMAGE_TAG: ${{ env.TAG || 'latest' }}
-      if: startsWith(github.ref, 'refs/tags/')
+        DOCKER_TAG: v${{ env.TAG }}
       run: |
-        make kubebuilder.manifests
-        make .kubebuilder.update.chart
+        make build PLATFORMS=linux_amd64
         make -C images/wordpress-operator img.build BUILD_REGISTRY=${{ env.LOCAL_REGISTRY }}
         docker tag ${{ env.LOCAL_REGISTRY }}/wordpress-operator-amd64:latest \
-                   ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
-        docker push ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.TAG }}
+          ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.DOCKER_TAG }}
+
+        docker push ${{ steps.login-ecr.outputs.registry }}/wordpress-operator:${{ env.DOCKER_TAG }}
