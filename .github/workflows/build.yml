@@ -51,9 +51,7 @@ jobs:
       env:
         IMAGE_TAG: ${{ env.TAG || 'latest' }}
       run: |
-        make kubebuilder.manifests
-        make .kubebuilder.update.chart
-        make helm.build
+        make build.all
 
     - name: Push Chart to ECR
       if: startsWith(github.ref, 'refs/tags/')
