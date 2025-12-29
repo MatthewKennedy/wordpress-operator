@@ -45,15 +45,13 @@ jobs:
         LOCAL_REGISTRY: "local-build"
         IMAGE_TAG: ${{ env.TAG || 'latest' }}
       run: |
-        # 1. Compile the binary
+      if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+        make kubebuilder.manifests
+        make .kubebuilder.update.chart
         make build PLATFORMS=linux_amd64
-
-        # 2. Build the image using the project's logic,
-        # but override BUILD_REGISTRY so we know the image name
         make -C images/wordpress-operator img.build BUILD_REGISTRY=${{ env.LOCAL_REGISTRY }}
 
-        # 3. Push to ECR if this is a version tag
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+
           # The image was built as local-build/wordpress-operator-amd64:latest
           # Retag it to your actual ECR registry and specific version tag
           docker tag ${{ env.LOCAL_REGISTRY }}/wordpress-operator-amd64:latest \
