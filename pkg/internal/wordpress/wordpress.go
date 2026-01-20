@@ -142,7 +142,7 @@ func (wp *Wordpress) MainDomain() string {
 
 // HomeURL returns the WP_HOMEURL (e.g. http://example.com/)
 func (wp *Wordpress) HomeURL(subPaths ...string) string {
-	scheme := "http"
+	scheme := "https"
 	if len(wp.Spec.TLSSecretRef) > 0 {
 		scheme = "https"
 	}
