@@ -1,6 +1,6 @@
 module github.com/bitpoke/wordpress-operator
 
-go 1.17
+go 1.22
 
 require (
 	github.com/appscode/mergo v0.3.6
