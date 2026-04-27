@@ -18,5 +18,4 @@ limitations under the License.
 //
 // +kubebuilder:object:generate:=true
 // +groupName=wordpress.presslabs.org
-//
 package v1alpha1

@@ -10,7 +10,7 @@ GO111MODULE=on
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/wordpress-operator
 GO_SUPPORTED_VERSIONS = 1.22
 GOFMT_VERSION = 1.22
-GOLANGCI_LINT_VERSION = 1.42.1
+GOLANGCI_LINT_VERSION = 1.56.2
 GO_LDFLAGS += -X github.com/bitpoke/wordpress-operator/pkg/version.buildDate=$(BUILD_DATE) \
 	       -X github.com/bitpoke/wordpress-operator/pkg/version.gitVersion=$(VERSION) \
 	       -X github.com/bitpoke/wordpress-operator/pkg/version.gitCommit=$(GIT_COMMIT) \

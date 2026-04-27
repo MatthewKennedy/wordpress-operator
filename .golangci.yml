@@ -1,8 +1,6 @@
 run:
   # TODO: re-enable tests linting and make them pass
   tests: false
-  skip-files:
-    - zz_generated
 
 linters-settings:
   dupl:
@@ -12,10 +10,28 @@ linters-settings:
   cyclop:
     max-complexity: 15
   govet:
-    check-shadowing: true
+    enable-all: true
+    disable:
+      - fieldalignment
   lll:
     line-length: 170
     tab-width: 4
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - github.com/bitpoke
+          - github.com/presslabs
+          - github.com/appscode
+          - github.com/cooleo
+          - github.com/go-logr
+          - github.com/onsi
+          - github.com/spf13
+          - k8s.io
+          - sigs.k8s.io
+          - golang.org
+          - gomodules.xyz
 
 linters:
   presets:
@@ -30,9 +46,22 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - wrapcheck
-    - exhaustivestruct
+    - exhaustruct
     # TODO: fix those linters (they were added for 1.42.1 upgrade)
     - gci
+    # new linters not previously active - disable to keep upgrade minimal
+    - tagalign
+    - contextcheck
+    - depguard
+    - execinquery
+    - ireturn
+    - nonamedreturns
+    - perfsprint
+    - usestdlibvars
+    - varnamelen
+    - wsl
+    - forcetypeassert
+    - nolintlint
 
 issues:
   max-same-issues: 0
@@ -50,3 +79,6 @@ issues:
       # Ignore package comments (ST1000) since most of the time are irrelevant
       - stylecheck
       text: "ST1000"
+    - linters:
+        - revive
+      text: "package-comments"
