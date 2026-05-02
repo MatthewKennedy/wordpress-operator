@@ -21,7 +21,7 @@ DOCKER_REGISTRY ?= docker.io/bitpoke
 IMAGES ?= wordpress-operator
 include build/makelib/image.mk
 
-KUBEBUILDER_ASSETS_VERSION := 1.21.2
+KUBEBUILDER_ASSETS_VERSION := 1.30.6
 GEN_CRD_OPTIONS := crd:crdVersions=v1,preserveUnknownFields=false
 include build/makelib/kubebuilder-v3.mk
 

@@ -539,7 +539,7 @@ func (wp *Wordpress) readinessProbe() *corev1.Probe {
 	}
 
 	return &corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
 				Path: "/",
 				Port: intstr.FromInt(InternalHTTPPort),
@@ -565,7 +565,7 @@ func (wp *Wordpress) livenessProbe() *corev1.Probe {
 	}
 
 	return &corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
 				Path: "/-/php-ping",
 				Port: intstr.FromInt(InternalHTTPPort),
@@ -616,7 +616,7 @@ func (wp *Wordpress) WebPodTemplateSpec() (out corev1.PodTemplateSpec) {
 		},
 		SecurityContext: wp.securityContext(),
 		Lifecycle: &corev1.Lifecycle{
-			PostStart: &corev1.Handler{
+			PostStart: &corev1.LifecycleHandler{
 				Exec: &corev1.ExecAction{
 					Command: []string{
 						"/bin/sh", "-c",
@@ -624,7 +624,7 @@ func (wp *Wordpress) WebPodTemplateSpec() (out corev1.PodTemplateSpec) {
 					},
 				},
 			},
-			PreStop: &corev1.Handler{
+			PreStop: &corev1.LifecycleHandler{
 				Exec: &corev1.ExecAction{
 					Command: []string{
 						"/bin/sh", "-c",

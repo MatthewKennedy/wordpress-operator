@@ -19,14 +19,11 @@ package main
 import (
 	"os"
 
-	logf "github.com/presslabs/controller-util/log"
 	flag "github.com/spf13/pflag"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/klog/v2/klogr"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"github.com/bitpoke/wordpress-operator/pkg/apis"
 	"github.com/bitpoke/wordpress-operator/pkg/cmd/options"
@@ -35,7 +32,7 @@ import (
 
 const genericErrorExitCode = 1
 
-var setupLog = logf.Log.WithName("wordpress-operator")
+var setupLog = ctrl.Log.WithName("wordpress-operator")
 
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch;delete
 
@@ -43,31 +40,22 @@ func main() {
 	options.AddToFlagSet(flag.CommandLine)
 	flag.Parse()
 
-	logf.SetLogger(klogr.New())
+	ctrl.SetLogger(zap.New())
 	setupLog.Info("Starting wordpress-operator...")
 
 	// Get a config to talk to the apiserver
-	cfg, err := config.GetConfig()
-	if err != nil {
-		setupLog.Error(err, "unable to get configuration")
-		os.Exit(genericErrorExitCode)
-	}
+	cfg := ctrl.GetConfigOrDie()
 
-	opt := manager.Options{
-		LeaderElection:             options.LeaderElection,
-		LeaderElectionID:           options.LeaderElectionID,
-		LeaderElectionNamespace:    options.LeaderElectionNamespace,
-		LeaderElectionResourceLock: "leases",
-		MetricsBindAddress:         options.MetricsBindAddress,
-		HealthProbeBindAddress:     options.HealthProbeBindAddress,
-	}
-
-	if options.WatchNamespace != "" {
-		opt.Namespace = options.WatchNamespace
+	opt := ctrl.Options{
+		LeaderElection:          options.LeaderElection,
+		LeaderElectionID:        options.LeaderElectionID,
+		LeaderElectionNamespace: options.LeaderElectionNamespace,
+		Metrics:                 metricsserver.Options{BindAddress: options.MetricsBindAddress},
+		HealthProbeBindAddress:  options.HealthProbeBindAddress,
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, opt)
+	mgr, err := ctrl.NewManager(cfg, opt)
 	if err != nil {
 		setupLog.Error(err, "unable to create a new manager")
 		os.Exit(genericErrorExitCode)
@@ -96,7 +84,7 @@ func main() {
 	}
 
 	// Start the Cmd
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "unable to start the manager")
 		os.Exit(genericErrorExitCode)
 	}

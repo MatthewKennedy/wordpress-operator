@@ -21,16 +21,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	logf "github.com/presslabs/controller-util/log"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/klogr"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -41,11 +40,10 @@ var cfg *rest.Config
 var t *envtest.Environment
 
 func TestWordpressController(t *testing.T) {
-	klog.SetOutput(GinkgoWriter)
-	logf.SetLogger(klogr.New())
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter)))
 
 	RegisterFailHandler(Fail)
-	RunSpecsWithDefaultAndCustomReporters(t, "Wordpress Controller Suite", []Reporter{printer.NewlineReporter{}})
+	RunSpecs(t, "Wordpress Controller Suite")
 }
 
 var _ = BeforeSuite(func() {

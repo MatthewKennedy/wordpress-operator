@@ -22,8 +22,7 @@ import (
 	"math/rand"
 	"time"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	wordpressv1alpha1 "github.com/bitpoke/wordpress-operator/pkg/apis/wordpress/v1alpha1"
@@ -55,7 +55,7 @@ var _ = Describe("Wordpress controller", func() {
 		var recFn reconcile.Reconciler
 
 		mgr, err := manager.New(cfg, manager.Options{
-			MetricsBindAddress: "0",
+			Metrics: metricsserver.Options{BindAddress: "0"},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		c = mgr.GetClient()
@@ -75,15 +75,6 @@ var _ = Describe("Wordpress controller", func() {
 			expectedRequest reconcile.Request
 			wp              *wordpressv1alpha1.Wordpress
 		)
-
-		entries := []TableEntry{
-			Entry("reconciles the wp secret", "%s-wp", &corev1.Secret{}),
-			Entry("reconciles the deployment", "%s", &appsv1.Deployment{}),
-			Entry("reconciles the service", "%s", &corev1.Service{}),
-			Entry("reconciles the ingress", "%s", &netv1.Ingress{}),
-			Entry("reconciles the code pvc", "%s-code", &corev1.PersistentVolumeClaim{}),
-			Entry("reconciles the media pvc", "%s-media", &corev1.PersistentVolumeClaim{}),
-		}
 
 		BeforeEach(func() {
 			r := rand.Int31()
@@ -108,7 +99,7 @@ var _ = Describe("Wordpress controller", func() {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					corev1.ReadWriteOnce,
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("1Gi"),
 					},
@@ -119,7 +110,7 @@ var _ = Describe("Wordpress controller", func() {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					corev1.ReadWriteOnce,
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("1Gi"),
 					},
@@ -141,13 +132,22 @@ var _ = Describe("Wordpress controller", func() {
 			Expect(c.Delete(context.TODO(), wp)).To(Succeed())
 
 			// GC created objects
-			for _, e := range entries {
-				obj := e.Parameters[1].(client.Object)
-				nameFmt := e.Parameters[0].(string)
-				mo := obj.(metav1.Object)
-				mo.SetName(fmt.Sprintf(nameFmt, wp.Name))
+			cleanupEntries := []struct {
+				nameFmt string
+				obj     client.Object
+			}{
+				{"%s-wp", &corev1.Secret{}},
+				{"%s", &appsv1.Deployment{}},
+				{"%s", &corev1.Service{}},
+				{"%s", &netv1.Ingress{}},
+				{"%s-code", &corev1.PersistentVolumeClaim{}},
+				{"%s-media", &corev1.PersistentVolumeClaim{}},
+			}
+			for _, e := range cleanupEntries {
+				mo := e.obj.(metav1.Object)
+				mo.SetName(fmt.Sprintf(e.nameFmt, wp.Name))
 				mo.SetNamespace(wp.Namespace)
-				c.Delete(context.TODO(), obj)
+				c.Delete(context.TODO(), e.obj)
 			}
 		})
 
@@ -162,7 +162,14 @@ var _ = Describe("Wordpress controller", func() {
 			Expect(c.Delete(context.TODO(), obj)).To(Succeed())
 			Eventually(requests, timeout).Should(Receive(Equal(expectedRequest)))
 			Eventually(func() error { return c.Get(context.TODO(), key, obj) }, timeout).Should(Succeed())
-		}, entries...)
+		},
+			Entry("reconciles the wp secret", "%s-wp", &corev1.Secret{}),
+			Entry("reconciles the deployment", "%s", &appsv1.Deployment{}),
+			Entry("reconciles the service", "%s", &corev1.Service{}),
+			Entry("reconciles the ingress", "%s", &netv1.Ingress{}),
+			Entry("reconciles the code pvc", "%s-code", &corev1.PersistentVolumeClaim{}),
+			Entry("reconciles the media pvc", "%s-media", &corev1.PersistentVolumeClaim{}),
+		)
 
 		It("allows specifying deployment strategy", func() {
 			key := types.NamespacedName{

@@ -19,22 +19,21 @@ package wordpress
 import (
 	"context"
 
-	"github.com/presslabs/controller-util/syncer"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/presslabs/controller-util/pkg/syncer"
 
 	wordpressv1alpha1 "github.com/bitpoke/wordpress-operator/pkg/apis/wordpress/v1alpha1"
 	"github.com/bitpoke/wordpress-operator/pkg/controller/wordpress/internal/sync"
@@ -51,42 +50,20 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler.
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileWordpress{Client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetEventRecorderFor(controllerName)}
+	return &ReconcileWordpress{Client: mgr.GetClient(), recorder: mgr.GetEventRecorderFor(controllerName)}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler.
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New(controllerName, mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to Wordpress
-	err = c.Watch(&source.Kind{Type: &wordpressv1alpha1.Wordpress{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	subresources := []client.Object{
-		&appsv1.Deployment{},
-		&corev1.PersistentVolumeClaim{},
-		&corev1.Service{},
-		&corev1.Secret{},
-		&netv1.Ingress{},
-	}
-
-	for _, subresource := range subresources {
-		err = c.Watch(&source.Kind{Type: subresource}, &handler.EnqueueRequestForOwner{
-			IsController: true,
-			OwnerType:    &wordpressv1alpha1.Wordpress{},
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&wordpressv1alpha1.Wordpress{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.PersistentVolumeClaim{}).
+		Owns(&corev1.Service{}).
+		Owns(&corev1.Secret{}).
+		Owns(&netv1.Ingress{}).
+		WithOptions(controller.Options{}).
+		Complete(r)
 }
 
 var _ reconcile.Reconciler = &ReconcileWordpress{}
@@ -94,7 +71,6 @@ var _ reconcile.Reconciler = &ReconcileWordpress{}
 // ReconcileWordpress reconciles a Wordpress object.
 type ReconcileWordpress struct {
 	client.Client
-	scheme   *runtime.Scheme
 	recorder record.EventRecorder
 }
 
@@ -122,7 +98,6 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	r.scheme.Default(wp.Unwrap())
 	wp.SetDefaults()
 
 	secretSyncer := sync.NewSecretSyncer(wp, r.Client)
