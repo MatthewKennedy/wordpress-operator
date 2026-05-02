@@ -20,8 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	corev1 "k8s.io/api/core/v1"
@@ -190,7 +189,7 @@ var _ = Describe("Web pod spec", func() {
 		spec := wp.WebPodTemplateSpec()
 
 		Expect(*spec.Spec.Containers[0].ReadinessProbe).To(Equal(corev1.Probe{
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
 					Path: "/",
 					Port: intstr.FromInt(InternalHTTPPort),
@@ -212,7 +211,7 @@ var _ = Describe("Web pod spec", func() {
 
 	It("should give me the custom readiness probe specified in the Wordpress resource", func() {
 		probe := corev1.Probe{
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
 					Path: "/custom",
 					Port: intstr.FromInt(InternalHTTPPort),
@@ -230,7 +229,7 @@ var _ = Describe("Web pod spec", func() {
 		spec := wp.WebPodTemplateSpec()
 
 		Expect(*spec.Spec.Containers[0].LivenessProbe).To(Equal(corev1.Probe{
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
 					Path: "/-/php-ping",
 					Port: intstr.FromInt(InternalHTTPPort),
@@ -246,7 +245,7 @@ var _ = Describe("Web pod spec", func() {
 
 	It("should give me the custom liveness probe specified in the Wordpress resource", func() {
 		probe := corev1.Probe{
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
 					Path: "/custom",
 					Port: intstr.FromInt(InternalHTTPPort),

@@ -19,19 +19,16 @@ package wordpress
 import (
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	logf "github.com/presslabs/controller-util/log"
-	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/klogr"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 func TestPodTemplate(t *testing.T) {
-	klog.SetOutput(GinkgoWriter)
-	logf.SetLogger(klogr.New())
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter)))
 
 	RegisterFailHandler(Fail)
-	RunSpecsWithDefaultAndCustomReporters(t, "Pod Template Suite", []Reporter{printer.NewlineReporter{}})
+	RunSpecs(t, "Pod Template Suite")
 }

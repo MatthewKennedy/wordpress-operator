@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/presslabs/controller-util/syncer"
+	"github.com/presslabs/controller-util/pkg/syncer"
 
 	"github.com/bitpoke/wordpress-operator/pkg/cmd/options"
 	"github.com/bitpoke/wordpress-operator/pkg/internal/wordpress"

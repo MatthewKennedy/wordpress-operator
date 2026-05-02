@@ -28,15 +28,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	wordpressv1alpha1 "github.com/bitpoke/wordpress-operator/pkg/apis/wordpress/v1alpha1"
 	"github.com/bitpoke/wordpress-operator/pkg/internal/wordpress"
@@ -53,34 +50,16 @@ var errHTTP = errors.New("HTTP error")
 // Add creates a new Wordpress Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
-}
-
-// newReconciler returns a new reconcile.Reconciler.
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileWordpress{
+	r := &ReconcileWordpress{
 		Client:   mgr.GetClient(),
-		Log:      logf.Log.WithName(controllerName).WithValues("controller", controllerName),
-		scheme:   mgr.GetScheme(),
+		Log:      ctrl.Log.WithName(controllerName).WithValues("controller", controllerName),
 		recorder: mgr.GetEventRecorderFor(controllerName),
 	}
-}
 
-// add adds a new Controller to mgr with r as the reconcile.Reconciler.
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New(controllerName, mgr, controller.Options{Reconciler: r, MaxConcurrentReconciles: 32})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to Wordpress
-	err = c.Watch(&source.Kind{Type: &wordpressv1alpha1.Wordpress{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&wordpressv1alpha1.Wordpress{}).
+		WithOptions(controller.Options{MaxConcurrentReconciles: 32}).
+		Complete(r)
 }
 
 var _ reconcile.Reconciler = &ReconcileWordpress{}
@@ -89,7 +68,6 @@ var _ reconcile.Reconciler = &ReconcileWordpress{}
 type ReconcileWordpress struct {
 	client.Client
 	Log      logr.Logger
-	scheme   *runtime.Scheme
 	recorder record.EventRecorder
 }
 
@@ -107,7 +85,6 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 		return reconcile.Result{}, ignoreNotFound(err)
 	}
 
-	r.scheme.Default(wp.Unwrap())
 	wp.SetDefaults()
 
 	log := r.Log.WithValues("key", request.NamespacedName)

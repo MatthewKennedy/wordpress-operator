@@ -28,8 +28,8 @@ import (
 
 	"github.com/appscode/mergo"
 
-	"github.com/presslabs/controller-util/mergo/transformers"
-	"github.com/presslabs/controller-util/syncer"
+	"github.com/presslabs/controller-util/pkg/mergo/transformers"
+	"github.com/presslabs/controller-util/pkg/syncer"
 
 	"github.com/bitpoke/wordpress-operator/pkg/internal/wordpress"
 )
