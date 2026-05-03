@@ -140,13 +140,8 @@ func (wp *Wordpress) MainDomain() string {
 	return fmt.Sprintf("%s.%s.svc", wp.ComponentName(WordpressService), wp.Namespace)
 }
 
-// HomeURL returns the WP_HOMEURL (e.g. http://example.com/)
+// HomeURL returns the WP_HOMEURL (e.g. https://example.com/)
 func (wp *Wordpress) HomeURL(subPaths ...string) string {
-	scheme := "https"
-	if len(wp.Spec.TLSSecretRef) > 0 {
-		scheme = "https"
-	}
-
 	paths := []string{"/"}
 	if len(wp.Spec.Routes) > 0 {
 		paths = append(paths, wp.Spec.Routes[0].Path)
@@ -159,10 +154,10 @@ func (wp *Wordpress) HomeURL(subPaths ...string) string {
 		p = ""
 	}
 
-	return fmt.Sprintf("%s://%s%s", scheme, wp.MainDomain(), p)
+	return fmt.Sprintf("https://%s%s", wp.MainDomain(), p)
 }
 
-// SiteURL returns the WP_SITEURL (e.g. http://example.com/wp)
+// SiteURL returns the WP_SITEURL (e.g. https://example.com/wp)
 func (wp *Wordpress) SiteURL(subPaths ...string) string {
 	p := []string{wp.Spec.WordpressPathPrefix}
 	p = append(p, subPaths...)
