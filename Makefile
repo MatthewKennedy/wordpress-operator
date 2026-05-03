@@ -76,6 +76,7 @@ include build/makelib/helm.mk
 .helm.package.prepare.wordpress-operator:  $(YQ)
 	@$(INFO) prepare wordpress-operator chart $(HELM_CHART_VERSION)
 	@$(YQ) e '.image.repository="$(DOCKER_REGISTRY)/wordpress-operator"' -i $(HELM_CHARTS_WORK_DIR)/wordpress-operator/values.yaml
+	@$(YQ) e '.appVersion="v$(IMAGE_TAG)"' -i $(HELM_CHARTS_WORK_DIR)/wordpress-operator/Chart.yaml
 	@$(SED) 's/:latest/:$(IMAGE_TAG)/g' $(HELM_CHARTS_WORK_DIR)/wordpress-operator/Chart.yaml
 	@$(OK) prepare wordpress-operator chart $(HELM_CHART_VERSION)
 .helm.package.run.wordpress-operator: .helm.package.prepare.wordpress-operator

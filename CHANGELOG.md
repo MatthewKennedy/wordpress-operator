@@ -7,6 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 ### Added
 ### Changed
+ * Helm chart `appVersion` is now auto-set by the Makefile prepare target (`yq '.appVersion = "v$(IMAGE_TAG)"'`). No more manual bumps in source `Chart.yaml` per release.
 ### Removed
 ### Fixed
 
