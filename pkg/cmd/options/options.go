@@ -32,9 +32,6 @@ var (
 	// WordpressRuntimeImage is the base image used to run your code.
 	WordpressRuntimeImage = "docker.io/bitpoke/wordpress-runtime:5.8.2"
 
-	// IngressClass is the default ingress class used used for creating WordPress ingresses.
-	IngressClass = ""
-
 	// LeaderElection determines whether or not to use leader election when starting the manager.
 	LeaderElection = false
 
@@ -77,7 +74,6 @@ func namespace() string {
 func AddToFlagSet(flag *pflag.FlagSet) {
 	flag.StringVar(&GitCloneImage, "git-clone-image", GitCloneImage, "The image used when cloning code from git.")
 	flag.StringVar(&WordpressRuntimeImage, "wordpress-runtime-image", WordpressRuntimeImage, "The base image used for Wordpress.")
-	flag.StringVar(&IngressClass, "ingress-class", IngressClass, "The default ingress class for WordPress sites.")
 	flag.BoolVar(&LeaderElection, "leader-election", LeaderElection, "Enables or disables controller leader election.")
 	flag.StringVar(&LeaderElectionNamespace, "leader-election-namespace", LeaderElectionNamespace, "The namespace in which the leader election resource will be created.")
 	flag.StringVar(&LeaderElectionID, "leader-election-id", LeaderElectionID, "The name of the resource that leader election will use for holding the leader lock.")

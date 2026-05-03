@@ -22,7 +22,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -61,7 +60,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		Owns(&corev1.PersistentVolumeClaim{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.Secret{}).
-		Owns(&netv1.Ingress{}).
 		WithOptions(controller.Options{}).
 		Complete(r)
 }
@@ -78,7 +76,6 @@ type ReconcileWordpress struct {
 // +kubebuilder:rbac:groups=core,resources=secrets;services;persistentvolumeclaims;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=batch,resources=jobs;cronjobs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=wordpress.presslabs.org,resources=wordpresses;wordpresses/status,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile reads that state of the cluster for a Wordpress object and makes changes based on the state read

@@ -41,7 +41,6 @@ spec:
   replicas: 1
   image: quay.io/presslabs/wordpress-runtime:4.9.8-php71
   secretRef: mysite
-  tlsSecretRef: mysite-tls
   envFrom:
     - prefix: "WORDPRESS_"
       secretRef:

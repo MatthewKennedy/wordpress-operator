@@ -22,9 +22,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SecretRef represents a reference to a Secret.
-type SecretRef string
-
 // Domain represents a valid domain name.
 type Domain string
 
@@ -79,15 +76,12 @@ type WordpressSpec struct {
 	// Deprecated: use Routes instead. This field will be dropped in next release.
 	// +optional
 	Domains []Domain `json:"domains,omitempty"`
-	// Routes for which the ingress is created
-	// The first item is set the WP_HOME and WP_SITEURL constants.
-	// If no routes are specified, ingress syncing is disabled and WP_HOME de defaults to NAME.NAMESPACE.svc.
+	// Routes define the domain/path pairs the site is reachable at.
+	// The first item sets the WP_HOME and WP_SITEURL constants.
+	// If no routes are specified, WP_HOME defaults to NAME.NAMESPACE.svc.
+	// Routing itself (Ingress, Gateway API, etc.) is managed outside the operator.
 	// +optional
 	Routes []RouteSpec `json:"routes,omitempty"`
-	// SkipIngress allows disabling the ingress creation even if routes are defined.
-	// This is useful when using Gateway API or other routing mechanisms.
-	// +optional
-	SkipIngress bool `json:"skipIngress,omitempty"`
 	// WordPress runtime image to use. Defaults to docker.io/bitpoke/wordpress-runtime:<latest stable runtime tag>
 	// +optional
 	Image string `json:"image,omitempty"`
@@ -102,9 +96,6 @@ type WordpressSpec struct {
 	// More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
-	// TLSSecretRef a secret containing the TLS certificates for this site.
-	// +optional
-	TLSSecretRef SecretRef `json:"tlsSecretRef,omitempty"`
 	// DeploymentStrategy allows setting the deployment strategy for the WordPress site
 	DeploymentStrategy *appsv1.DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 	// CodeVolumeSpec specifies how the site's code gets mounted into the
@@ -164,9 +155,6 @@ type WordpressSpec struct {
 	// If specified, indicates the pod's priority class
 	// +optional
 	PriorityClassName string `json:"priorityClassName,omitempty"`
-	// IngressAnnotations for this Wordpress site
-	// +optional
-	IngressAnnotations map[string]string `json:"ingressAnnotations,omitempty"`
 	// Additional init containers
 	// +optional
 	InitContainers []corev1.Container `json:"initContainers,omitempty"`

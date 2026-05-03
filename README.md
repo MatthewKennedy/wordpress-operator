@@ -134,12 +134,9 @@ spec:
         secretKeyRef: mysite-mysql
         key: DATABASE
   envFrom: []
-
-  # secret containg HTTPS certificate
-  tlsSecretRef: mysite-tls
-  # extra ingress annotations
-  ingressAnnotations: {}
 ```
+
+> **Note:** The operator manages the WordPress Deployment, Service, Secret, and PVCs. Routing (Ingress, Gateway API HTTPRoute, etc.) and TLS termination are managed outside the operator — point your Gateway/HTTPRoute at the generated Service.
 
 ## License
 
