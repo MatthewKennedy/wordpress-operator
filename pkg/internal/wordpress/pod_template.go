@@ -435,7 +435,8 @@ func (wp *Wordpress) prepareVolumesContainer() corev1.Container {
 				Name: "POD_NAMESPACE",
 				ValueFrom: &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{
-						FieldPath: "metadata.namespace",
+						APIVersion: "v1",
+						FieldPath:  "metadata.namespace",
 					},
 				},
 			},
@@ -443,7 +444,8 @@ func (wp *Wordpress) prepareVolumesContainer() corev1.Container {
 				Name: "POD_NAME",
 				ValueFrom: &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{
-						FieldPath: "metadata.name",
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
 					},
 				},
 			},

@@ -111,13 +111,14 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 	defer cancel()
 
 	err = r.pingURL(ctxWithTimeout, _u.String(), wp.MainDomain())
-	if err != nil {
-		log.Error(err, "error while triggering wp-cron")
-	}
+	// pingURL failures are recorded as a status condition (WPCronTriggering=False)
+	// rather than spamming the operator log every poll interval. Use
+	// `kubectl get wordpress` or the WPCronTriggering condition to observe state.
 
-	err = r.updateWPCronStatus(ctx, wp, err)
-	if err != nil {
-		log.Error(err, "error updating wordpress wp-cron status")
+	if updateErr := r.updateWPCronStatus(ctx, wp, err); updateErr != nil && !k8serrors.IsConflict(updateErr) {
+		// Optimistic-concurrency conflicts are expected when many controllers update
+		// status concurrently and resolve naturally on the next reconcile.
+		log.Error(updateErr, "error updating wordpress wp-cron status")
 	}
 
 	return requeue, nil

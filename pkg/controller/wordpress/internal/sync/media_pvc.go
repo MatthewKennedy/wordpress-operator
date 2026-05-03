@@ -43,10 +43,10 @@ func NewMediaPVCSyncer(wp *wordpress.Wordpress, c client.Client) syncer.Interfac
 	}
 
 	return syncer.NewObjectSyncer("MediaPVC", wp.Unwrap(), obj, c, func() error {
-		obj.Labels = labels.Merge(labels.Merge(wp.Spec.MediaVolumeSpec.Labels, objLabels), controllerLabels)
+		obj.Labels = labels.Merge(labels.Merge(wp.Spec.MediaVolumeSpec.Metadata.Labels, objLabels), controllerLabels)
 
-		if len(wp.Spec.MediaVolumeSpec.Annotations) > 0 {
-			obj.Annotations = labels.Merge(obj.Annotations, wp.Spec.MediaVolumeSpec.Annotations)
+		if len(wp.Spec.MediaVolumeSpec.Metadata.Annotations) > 0 {
+			obj.Annotations = labels.Merge(obj.Annotations, wp.Spec.MediaVolumeSpec.Metadata.Annotations)
 		}
 
 		if wp.Spec.MediaVolumeSpec == nil || wp.Spec.MediaVolumeSpec.PersistentVolumeClaim == nil {

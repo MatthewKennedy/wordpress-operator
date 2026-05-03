@@ -2,11 +2,9 @@
 
 Captured 2026-05-03 after the v2.0.1 release. Priorities are guesses — confirm before working.
 
-## Real bugs
+## Real bugs (B1–B3)
 
-- **B1. Reconcile churn from `FieldRef.APIVersion` syncer thrash.** Every reconcile logs an error: `Spec.Template.Spec.InitContainers.slice[0].Env.slice[0].ValueFrom.FieldRef.APIVersion: v1 != ""`. The controller-util syncer detects a phantom diff (apiserver defaults `APIVersion` to `v1` server-side, but the desired object has `""`), tries to patch it, and fails with optimistic-concurrency every time. Pre-existing, not from v2.0 work. Likely fixed in `presslabs/controller-util` v0.18 — verify by reading release notes before bumping.
-- **B2. `KubeAPIWarningLogger` log spam.** PVC syncers (`pkg/controller/wordpress/internal/sync/code_pvc.go`, `media_pvc.go`) write back `metadata.creationTimestamp: null` into `spec.code.metadata` / `spec.media.metadata`, which the CRD doesn't define. Cosmetic, but constant.
-- **B3. wp-cron-controller error spam.** `pkg/controller/wp-cron/wpcron_controller.go:115` logs at `error` level with a full stack trace every time the WordPress pod is unreachable. With many sites this is a log-volume problem. Should be `warn`, or quieted on transient connection errors.
+All shipped in v2.1.0 (2026-05-03). See CHANGELOG for details.
 
 ## Quick wins (Q1–Q7)
 

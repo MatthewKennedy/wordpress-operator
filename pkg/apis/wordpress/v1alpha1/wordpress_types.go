@@ -216,11 +216,23 @@ type GCSVolumeSource struct {
 	Env []corev1.EnvVar `json:"env,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 }
 
+// VolumeMetadata applies labels and annotations to the PVC the operator
+// generates for a code or media volume.
+type VolumeMetadata struct {
+	// Labels applied to the generated PVC.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+	// Annotations applied to the generated PVC.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // CodeVolumeSpec is the desired spec for mounting code into the wordpress
 // runtime container.
 type CodeVolumeSpec struct {
-	// Metadata for the media volume. Currently only labels and annotations are set if a PVC is specified
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Metadata applied to the generated PVC.
+	// +optional
+	Metadata VolumeMetadata `json:"metadata,omitempty"`
 	// ReadOnly specifies if the volume should be mounted read-only inside the
 	// wordpress runtime container
 	ReadOnly bool `json:"readOnly,omitempty"`
@@ -253,8 +265,9 @@ type CodeVolumeSpec struct {
 
 // MediaVolumeSpec is the desired spec for handling media files at runtime.
 type MediaVolumeSpec struct {
-	// Metadata for the media volume. Currently only labels and annotations are set if a PVC is specified
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Metadata applied to the generated PVC.
+	// +optional
+	Metadata VolumeMetadata `json:"metadata,omitempty"`
 	// ReadOnly specifies if the volume should be mounted read-only inside the
 	// wordpress runtime container
 	ReadOnly bool `json:"readOnly,omitempty"`

@@ -10,6 +10,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Removed
 ### Fixed
 
+## [2.1.0] - 2026-05-03
+### Fixed
+ * **B1: Reconcile thrash on `FieldRef.APIVersion`.** The init-container env vars (`POD_NAMESPACE`, `POD_NAME`) constructed `corev1.ObjectFieldSelector` with no `APIVersion`, leaving Go's zero-value `""`. The apiserver defaults it to `"v1"` server-side, so the syncer detected a phantom diff every reconcile and tried (and failed) to patch it back. Set `APIVersion: "v1"` explicitly. (`pkg/internal/wordpress/pod_template.go`)
+ * **B2: `KubeAPIWarningLogger: unknown field "spec.code.metadata.creationTimestamp"`.** `CodeVolumeSpec` and `MediaVolumeSpec` embedded `metav1.ObjectMeta`, which exposes 14+ fields none of which the operator reads except `Labels` and `Annotations`. Replaced the embed with a small `VolumeMetadata` struct containing only those two fields. JSON shape (`spec.code.metadata.labels`, `spec.code.metadata.annotations`) is unchanged — anyone using only those keys is unaffected.
+ * **B3: wp-cron-controller log spam.** Every wp-cron poll against an unreachable WordPress pod logged a full-stack-trace error. The `WPCronTriggering` status condition already records this state persistently. Dropped the per-poll error log; suppressed status-update logs for expected optimistic-concurrency conflicts. (`pkg/controller/wp-cron/wpcron_controller.go`)
+### Notes
+ * The B2 fix is a narrow schema change. The CRD no longer accepts `spec.code.metadata.{name,namespace,uid,creationTimestamp,...}` — but those fields were never functional. Functional fields (`labels`, `annotations`) are unaffected.
+
 ## [2.0.2] - 2026-05-03
 ### Changed
  * Helm chart `appVersion` is now auto-set by the Makefile prepare target (`yq '.appVersion = "v$(IMAGE_TAG)"'`). No more manual bumps in source `Chart.yaml` per release.
