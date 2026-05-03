@@ -35,7 +35,7 @@ The chart is published as an OCI artifact:
 
 ```shell
 helm install wordpress-operator oci://public.ecr.aws/w0a8g6c1/wordpress-operator \
-  --version 2.0.1 \
+  --version 3.0.0 \
   --namespace wordpress-operator \
   --create-namespace
 ```

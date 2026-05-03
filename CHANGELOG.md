@@ -10,6 +10,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Removed
 ### Fixed
 
+## [3.0.0] - 2026-05-03
+### Removed
+ * **BREAKING:** Removed deprecated `spec.domains` field from the Wordpress CR. Use `spec.routes` instead — the operator's `maybeMigrate` helper that auto-converted `domains` → `routes` is also gone. Existing CRs that still use `spec.domains` will be rejected by the apiserver after upgrade. Migration: rewrite as `spec.routes: [{ domain: "example.com" }]`.
+ * **BREAKING:** Removed the `Domain` API type (only used by the deleted `spec.domains` field).
+ * Removed `cleanupCronJob` controller logic. Earlier versions of the operator deployed `wp-cron` as a Kubernetes `CronJob`; the cleanup helper was kept to GC those after the wp-cron model changed. Anyone still upgrading from a pre-CronJob-removal version will need to delete leftover `CronJob` resources manually.
+ * Removed `cronjobs` from the chart's `ClusterRole` and from the `+kubebuilder:rbac` marker. `jobs` is preserved (still used by `pkg/controller/wordpress/internal/sync/upgrade.go`).
+
 ## [2.1.0] - 2026-05-03
 ### Fixed
  * **B1: Reconcile thrash on `FieldRef.APIVersion`.** The init-container env vars (`POD_NAMESPACE`, `POD_NAME`) constructed `corev1.ObjectFieldSelector` with no `APIVersion`, leaving Go's zero-value `""`. The apiserver defaults it to `"v1"` server-side, so the syncer detected a phantom diff every reconcile and tried (and failed) to patch it back. Set `APIVersion: "v1"` explicitly. (`pkg/internal/wordpress/pod_template.go`)

@@ -20,11 +20,8 @@ import (
 	"context"
 
 	appsv1 "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -75,7 +72,7 @@ type ReconcileWordpress struct {
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=core,resources=secrets;services;persistentvolumeclaims;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=batch,resources=jobs;cronjobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=wordpress.presslabs.org,resources=wordpresses;wordpresses/status,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile reads that state of the cluster for a Wordpress object and makes changes based on the state read
@@ -87,12 +84,6 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 	err := r.Get(ctx, request.NamespacedName, wp.Unwrap())
 	if err != nil {
 		return reconcile.Result{}, ignoreNotFound(err)
-	}
-
-	if updated, needsMigration := r.maybeMigrate(wp.Unwrap()); needsMigration {
-		err = r.Update(ctx, updated)
-
-		return reconcile.Result{}, err
 	}
 
 	wp.SetDefaults()
@@ -127,11 +118,6 @@ func (r *ReconcileWordpress) Reconcile(ctx context.Context, request reconcile.Re
 		}
 	}
 
-	// remove old cron job if exists
-	if err = r.cleanupCronJob(ctx, wp); err != nil {
-		return reconcile.Result{}, err
-	}
-
 	return reconcile.Result{}, nil
 }
 
@@ -151,53 +137,4 @@ func (r *ReconcileWordpress) sync(ctx context.Context, syncers []syncer.Interfac
 	}
 
 	return nil
-}
-
-func (r *ReconcileWordpress) maybeMigrate(wp *wordpressv1alpha1.Wordpress) (*wordpressv1alpha1.Wordpress, bool) {
-	var needsMigration bool
-
-	out := wp.DeepCopy()
-
-	if len(out.Spec.Routes) == 0 {
-		for i := range out.Spec.Domains {
-			out.Spec.Routes = append(out.Spec.Routes, wordpressv1alpha1.RouteSpec{
-				Domain: string(out.Spec.Domains[i]),
-				Path:   "/",
-			})
-			needsMigration = true
-		}
-	}
-
-	out.Spec.Domains = nil
-
-	return out, needsMigration
-}
-
-func (r *ReconcileWordpress) cleanupCronJob(ctx context.Context, wp *wordpress.Wordpress) error {
-	cronKey := types.NamespacedName{
-		Name:      wp.ComponentName(wordpress.WordpressCron),
-		Namespace: wp.Namespace,
-	}
-
-	cronJob := &batchv1.CronJob{}
-
-	if err := r.Get(ctx, cronKey, cronJob); err != nil {
-		return ignoreNotFound(err)
-	}
-
-	if !isOwnedBy(cronJob.OwnerReferences, wp) {
-		return nil
-	}
-
-	return r.Delete(ctx, cronJob)
-}
-
-func isOwnedBy(refs []metav1.OwnerReference, owner *wordpress.Wordpress) bool {
-	for _, ref := range refs {
-		if (ref.Kind == "Wordpress" || ref.Kind == "wordpress") && ref.Name == owner.Name {
-			return true
-		}
-	}
-
-	return false
 }

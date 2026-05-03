@@ -10,10 +10,9 @@ All shipped in v2.1.0 (2026-05-03). See CHANGELOG for details.
 
 All shipped in v2.0.2 (2026-05-03). See CHANGELOG for details.
 
-## Medium
+## Medium (M1–M2)
 
-- **M1. Remove `cleanupCronJob`** (`pkg/controller/wordpress/wordpress_controller.go:131`/`176`). Migration code from when wp-cron was a Kubernetes `CronJob`. With v2.0.x being a clean break, this is likely dead. Could be wrong for users hopping multiple major versions. Verify before deleting.
-- **M2. Remove deprecated `spec.domains`** (`pkg/apis/wordpress/v1alpha1/wordpress_types.go:81`). Already migrated to `spec.routes` via `maybeMigrate` in the controller. Worth removing for v3.
+All shipped in v3.0.0 (2026-05-03). See CHANGELOG for details.
 
 ## Bigger upgrades (warrant their own release each)
 

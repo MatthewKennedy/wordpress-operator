@@ -37,7 +37,7 @@ var _ = Describe("Wordpress CRUD", func() {
 		created = &Wordpress{}
 		created.Name = key.Name
 		created.Namespace = key.Namespace
-		created.Spec.Domains = []Domain{"example.com"}
+		created.Spec.Routes = []RouteSpec{{Domain: "example.com", Path: "/"}}
 	})
 
 	AfterEach(func() {

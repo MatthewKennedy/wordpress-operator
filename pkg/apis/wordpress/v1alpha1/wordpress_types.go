@@ -22,9 +22,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Domain represents a valid domain name.
-type Domain string
-
 // RouteSpec defines a desired state for a route.
 type RouteSpec struct {
 	// Domain for the route
@@ -71,11 +68,6 @@ type WordpressSpec struct {
 	// explicit zero and not specified. Defaults to 1.
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
-	// Domains for which this this site answers.
-	// The first item is set as the "main domain" (eg. WP_HOME and WP_SITEURL constants).
-	// Deprecated: use Routes instead. This field will be dropped in next release.
-	// +optional
-	Domains []Domain `json:"domains,omitempty"`
 	// Routes define the domain/path pairs the site is reachable at.
 	// The first item sets the WP_HOME and WP_SITEURL constants.
 	// If no routes are specified, WP_HOME defaults to NAME.NAMESPACE.svc.

@@ -323,11 +323,6 @@ func (in *WordpressSpec) DeepCopyInto(out *WordpressSpec) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.Domains != nil {
-		in, out := &in.Domains, &out.Domains
-		*out = make([]Domain, len(*in))
-		copy(*out, *in)
-	}
 	if in.Routes != nil {
 		in, out := &in.Routes, &out.Routes
 		*out = make([]RouteSpec, len(*in))

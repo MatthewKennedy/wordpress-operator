@@ -829,10 +829,6 @@ spec:
                   type:
                     type: string
                 type: object
-              domains:
-                items:
-                  type: string
-                type: array
               env:
                 items:
                   properties:
