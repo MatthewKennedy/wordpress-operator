@@ -47,9 +47,6 @@ var (
 
 	// HealthProbeBindAddress is the TCP address that the controller should bind to for serving health probes.
 	HealthProbeBindAddress = ":8081"
-
-	// WatchNamespace sets the Namespace field, which restricts the manager's cache to watch objects in the desired namespace.
-	WatchNamespace = os.Getenv("WATCH_NAMESPACE")
 )
 
 func namespace() string {
