@@ -17,7 +17,7 @@ GO_LDFLAGS += -X github.com/bitpoke/wordpress-operator/pkg/version.buildDate=$(B
 	       -X github.com/bitpoke/wordpress-operator/pkg/version.gitTreeState=$(GIT_TREE_STATE)
 include build/makelib/golang.mk
 
-DOCKER_REGISTRY ?= docker.io/bitpoke
+DOCKER_REGISTRY ?= public.ecr.aws/w0a8g6c1
 IMAGES ?= wordpress-operator
 include build/makelib/image.mk
 

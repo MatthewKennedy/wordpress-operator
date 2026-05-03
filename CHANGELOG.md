@@ -10,6 +10,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Removed
 ### Fixed
 
+## [2.0.1] - 2026-05-03
+### Changed
+ * Helm chart defaults updated to point at `public.ecr.aws/w0a8g6c1/wordpress-operator`. Bare `helm install oci://public.ecr.aws/w0a8g6c1/wordpress-operator --version 2.0.1` now works without `--set` overrides.
+ * Chart `appVersion` set to `v2.0.1` so the deployment template's `image.tag` fallback resolves to a published image tag.
+ * Chart `version` bumped from `0.0.0` to `2.0.1` (chart and app versions now track together).
+ * Chart metadata (description, home, sources, keywords) rebranded for the detached fork.
+ * Makefile `DOCKER_REGISTRY` default changed to `public.ecr.aws/w0a8g6c1`.
+ * Bumped documented minimum Kubernetes version to 1.27 (matches controller-runtime v0.18 official support).
+### Removed
+ * Dropped `bitpoke` references from the chart `Chart.yaml`, `values.yaml`, and chart `README.md`.
+
 ## [2.0.0] - 2026-05-03
 ### Changed
  * Bump Kubernetes client libraries to v0.30.6 (`k8s.io/api`, `k8s.io/apimachinery`, `k8s.io/client-go`)

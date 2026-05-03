@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: docker.io/bitpoke/wordpress-operator
+  repository: public.ecr.aws/w0a8g6c1/wordpress-operator
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

@@ -33,15 +33,13 @@ kubectl apply --server-side -f https://raw.githubusercontent.com/MatthewKennedy/
 
 ### Install the operator
 
-The chart is published as an OCI artifact. The chart's baked-in defaults still point at the original bitpoke image, so override `image.repository` and `image.tag` until that's fixed:
+The chart is published as an OCI artifact:
 
 ```shell
 helm install wordpress-operator oci://public.ecr.aws/w0a8g6c1/wordpress-operator \
-  --version 2.0.0 \
+  --version 2.0.1 \
   --namespace wordpress-operator \
-  --create-namespace \
-  --set image.repository=public.ecr.aws/w0a8g6c1/wordpress-operator \
-  --set image.tag=v2.0.0
+  --create-namespace
 ```
 
 ## Routing
