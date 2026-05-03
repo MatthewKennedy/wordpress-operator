@@ -27,10 +27,10 @@ import (
 
 var (
 	// GitCloneImage is the image used by the init container that clones the code.
-	GitCloneImage = "docker.io/library/buildpack-deps:stretch-scm"
+	GitCloneImage = "docker.io/library/buildpack-deps:bookworm-scm"
 
 	// WordpressRuntimeImage is the base image used to run your code.
-	WordpressRuntimeImage = "docker.io/bitpoke/wordpress-runtime:5.8.2"
+	WordpressRuntimeImage = "ghcr.io/matthewkennedy/wordpress-runtime:6.9.1"
 
 	// LeaderElection determines whether or not to use leader election when starting the manager.
 	LeaderElection = false

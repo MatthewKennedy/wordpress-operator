@@ -22,7 +22,7 @@ IMAGES ?= wordpress-operator
 include build/makelib/image.mk
 
 KUBEBUILDER_ASSETS_VERSION := 1.30.6
-GEN_CRD_OPTIONS := crd:crdVersions=v1,preserveUnknownFields=false
+GEN_CRD_OPTIONS := crd:crdVersions=v1,maxDescLen=0
 include build/makelib/kubebuilder-v3.mk
 
 # fix for https://github.com/kubernetes-sigs/controller-tools/issues/476

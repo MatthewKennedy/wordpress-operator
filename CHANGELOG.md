@@ -7,9 +7,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 ### Added
 ### Changed
- * Helm chart `appVersion` is now auto-set by the Makefile prepare target (`yq '.appVersion = "v$(IMAGE_TAG)"'`). No more manual bumps in source `Chart.yaml` per release.
 ### Removed
 ### Fixed
+
+## [2.0.2] - 2026-05-03
+### Changed
+ * Helm chart `appVersion` is now auto-set by the Makefile prepare target (`yq '.appVersion = "v$(IMAGE_TAG)"'`). No more manual bumps in source `Chart.yaml` per release.
+ * GitHub Actions release workflow now triggers on `v[0-9]+.[0-9]+.[0-9]+` tags (was bare-numeric). Releases need only the v-prefixed tag — no more dual-tag-push dance. The TAG-extraction step strips the `v` prefix so downstream image/chart versioning is unchanged.
+ * Bumped `actions/setup-go@v4` → `@v5` (Node.js 20 deprecation lands 2026-06-02).
+ * Bumped operator base image from `gcr.io/distroless/static-debian10` (Buster, EOL 2024-06) to `gcr.io/distroless/static-debian12`. New digest pinned.
+ * Bumped default `WordpressRuntimeImage` from `docker.io/bitpoke/wordpress-runtime:5.8.2` to `ghcr.io/matthewkennedy/wordpress-runtime:6.9.1`.
+ * Bumped default `GitCloneImage` from `docker.io/library/buildpack-deps:stretch-scm` (Stretch, EOL 2022-06) to `bookworm-scm`.
+ * Stripped descriptions from generated CRDs (`controller-gen ... crd:maxDescLen=0`). The CRD shrinks from 478 KB to 151 KB and now fits under the 256 KB `kubectl apply` annotation limit. Users can drop the `--server-side` workaround from the install instructions.
+### Removed
+ * Deleted dead Drone CI files (`.drone.yml`, `build/.drone.yml`); CI lives in GitHub Actions.
+ * Deleted `pkg/webhook/` (single empty file kept for kubebuilder-v1 folder structure compliance; obsolete under kubebuilder v3).
+
+## [2.0.1] - 2026-05-03
 
 ## [2.0.1] - 2026-05-03
 ### Changed

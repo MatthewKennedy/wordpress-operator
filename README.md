@@ -26,10 +26,8 @@ The minimum supported Kubernetes version is 1.27.
 Helm installs the CRD by default. To install it manually first:
 
 ```shell
-kubectl apply --server-side -f https://raw.githubusercontent.com/MatthewKennedy/wordpress-operator/main/config/crd/bases/wordpress.presslabs.org_wordpresses.yaml
+kubectl apply -f https://raw.githubusercontent.com/MatthewKennedy/wordpress-operator/main/config/crd/bases/wordpress.presslabs.org_wordpresses.yaml
 ```
-
-`--server-side` is required because the generated CRD exceeds the 256 KB `last-applied-configuration` annotation limit.
 
 ### Install the operator
 

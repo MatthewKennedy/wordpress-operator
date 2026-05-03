@@ -82,7 +82,7 @@ type WordpressSpec struct {
 	// Routing itself (Ingress, Gateway API, etc.) is managed outside the operator.
 	// +optional
 	Routes []RouteSpec `json:"routes,omitempty"`
-	// WordPress runtime image to use. Defaults to docker.io/bitpoke/wordpress-runtime:<latest stable runtime tag>
+	// WordPress runtime image to use. Defaults to ghcr.io/matthewkennedy/wordpress-runtime:<latest stable runtime tag>
 	// +optional
 	Image string `json:"image,omitempty"`
 	// ImagePullPolicy overrides WordpressRuntime spec.imagePullPolicy
