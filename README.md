@@ -1,49 +1,52 @@
-wordpress-operator [![Build Status](https://ci.bitpoke.io/api/badges/bitpoke/wordpress-operator/status.svg)](https://ci.bitpoke.io/bitpoke/wordpress-operator)
+wordpress-operator
 ===
-Bitpoke WordPress operator enables managing multiple WordPress installments at scale.
+A Kubernetes operator for managing WordPress deployments at scale.
 
 ## Goals and status
 
 The main goals of the operator are:
 
-1. Easily deploy scalable WordPress sites on top of kubernetes
+1. Easily deploy scalable WordPress sites on top of Kubernetes
 2. Allow best practices for en masse upgrades (canary, slow rollout, etc.)
 3. Friendly to devops (monitoring, availability, scalability and backup stories solved)
 
-The project is actively developed and maintained and has reached stable beta state. Check [here](https://github.com/bitpoke/wordpress-operator/releases) the project releases.
+This is a fork of the original [bitpoke/wordpress-operator](https://github.com/bitpoke/wordpress-operator), maintained independently and updated for current Kubernetes versions. Releases are at [MatthewKennedy/wordpress-operator/releases](https://github.com/MatthewKennedy/wordpress-operator/releases).
 
-The minimum supported Kubernetes version is 1.19.
+The minimum supported Kubernetes version is 1.27.
 
 ## Components
 
-1. WordPress operator - this project
-2. WordPress runtime - container image supporting the project goals (https://github.com/bitpoke/stack-runtimes/tree/master/wordpress)
+1. **wordpress-operator** — this project. Image: `public.ecr.aws/w0a8g6c1/wordpress-operator`.
+2. **WordPress runtime** — container image (nginx + PHP-FPM) the operator deploys. Image: `ghcr.io/matthewkennedy/wordpress-runtime`. Source: [MatthewKennedy/stack-runtimes](https://github.com/MatthewKennedy/stack-runtimes).
 
 ## Deploy
 
 ### Install CRDs
 
-#### This step is optional. By default helm will install CRDs.
-
-Install kustomize. New to kustomize? Check https://kustomize.io/
-Install kubectl. For more details, see: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-
-To install CRDs use the following command:
+Helm installs the CRD by default. To install it manually first:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/bitpoke/wordpress-operator/master/config/crd/bases/wordpress.presslabs.org_wordpresses.yaml
+kubectl apply --server-side -f https://raw.githubusercontent.com/MatthewKennedy/wordpress-operator/main/config/crd/bases/wordpress.presslabs.org_wordpresses.yaml
 ```
 
-### Install controller
+`--server-side` is required because the generated CRD exceeds the 256 KB `last-applied-configuration` annotation limit.
 
-Install helm. New to helm? Check https://github.com/helm/helm#install
+### Install the operator
 
-To deploy this controller, use the provided helm chart, by running:
+The chart is published as an OCI artifact. The chart's baked-in defaults still point at the original bitpoke image, so override `image.repository` and `image.tag` until that's fixed:
 
 ```shell
-helm repo add bitpoke https://helm-charts.bitpoke.io
-helm install wordpress-operator bitpoke/wordpress-operator
+helm install wordpress-operator oci://public.ecr.aws/w0a8g6c1/wordpress-operator \
+  --version 2.0.0 \
+  --namespace wordpress-operator \
+  --create-namespace \
+  --set image.repository=public.ecr.aws/w0a8g6c1/wordpress-operator \
+  --set image.tag=v2.0.0
 ```
+
+## Routing
+
+The operator manages the WordPress `Deployment`, `Service`, `Secret`, and `PersistentVolumeClaim`s. Routing and TLS termination are intentionally **not** managed by the operator — point your Gateway API `HTTPRoute`, ingress controller, or reverse proxy at the generated `Service` (port `80` → container `8080`).
 
 ## Deploying a WordPress Site
 
@@ -54,13 +57,13 @@ metadata:
   name: mysite
 spec:
   replicas: 3
-  domains:
-    - example.com
-  # image: docker.io/bitpoke/wordpress-runtime
+  routes:
+    - domain: example.com
+  # image: ghcr.io/matthewkennedy/wordpress-runtime
   # tag: latest
   code: # where to find the code
     # contentSubpath: wp-content/
-    # by default, code get's an empty dir. Can be one of the following:
+    # by default, code gets an empty dir. Can be one of the following:
     git:
       repository: https://github.com/example.com
       # reference: master
@@ -76,9 +79,9 @@ spec:
     # emptyDir: {} (default)
 
   media: # where to find the media files
-    # by default, code get's an empty dir. Can be one of the following:
+    # by default, media gets an empty dir. Can be one of the following:
     gcs: # store files using Google Cloud Storage
-      bucket: calins-wordpress-runtime-playground
+      bucket: my-wordpress-media
       prefix: mysite/
       env:
         - name: GOOGLE_CREDENTIALS
@@ -123,20 +126,21 @@ spec:
       value: mysite-mysql
     - name: DB_USER
       valueFrom:
-        secretKeyRef: mysite-mysql
-        key: USER
+        secretKeyRef:
+          name: mysite-mysql
+          key: USER
     - name: DB_PASSWORD
       valueFrom:
-        secretKeyRef: mysite-mysql
-        key: PASSWORD
+        secretKeyRef:
+          name: mysite-mysql
+          key: PASSWORD
     - name: DB_NAME
       valueFrom:
-        secretKeyRef: mysite-mysql
-        key: DATABASE
+        secretKeyRef:
+          name: mysite-mysql
+          key: DATABASE
   envFrom: []
 ```
-
-> **Note:** The operator manages the WordPress Deployment, Service, Secret, and PVCs. Routing (Ingress, Gateway API HTTPRoute, etc.) and TLS termination are managed outside the operator — point your Gateway/HTTPRoute at the generated Service.
 
 ## License
 
